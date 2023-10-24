@@ -1,16 +1,8 @@
-import {
-  CircularProgress,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Typography,
-} from "@mui/material";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
-import { fetchProfiles } from "./api";
+//create a state that store all users
+//filter and setUser
+//render setUser
+
+import { Grid, InputLabel, MenuItem, Typography } from "@mui/material";
 import { useState } from "react";
 import {
   Container,
@@ -23,77 +15,43 @@ import {
 } from "./styles";
 import { userData } from "./data";
 
-export const queryClient = new QueryClient();
-
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ProfileList />
-    </QueryClientProvider>
-  );
-}
-
-function ProfileList() {
+  const [users, setUsers] = useState(userData.user);
   const [currentPage, setCurrentPage] = useState(1);
-  const [username, setUsername] = useState("");
-  const [filteredProfile, setFilteredProfile] = useState([]);
-  const [selectedOption, setSelectedOption] = useState("All");
+  const [username, setUsername] = useState("All");
+  const [filteredUsers, setFilteredUsers] = useState(users);
 
-  const { isPending, isError, error } = useQuery({
-    queryKey: ["profiles"],
-    queryFn: () => fetchProfiles,
-  });
-
-  if (isPending) {
-    return <CircularProgress />;
-  }
-
-  if (isError) {
-    return (
-      <Typography
-        variant="h5"
-        color="error"
-      >
-        Error: {error.message}
-      </Typography>
-    );
-  }
+  const usersPerPage = 3;
+  const uniqueUserNames = [
+    ...new Set(users.map((user) => user.first_name + " " + user.last_name)),
+  ];
 
   const handlePagination = (event, newPage) => {
     setCurrentPage(newPage);
   };
 
-  const usersPerPage = 3;
-
-  const uniqueUserNames = new Set();
-  userData.user.forEach((user) => {
-    uniqueUserNames.add(`${user.first_name} ${user.last_name}`);
-  });
-
-  const uniqueUserNamesArray = Array.from(uniqueUserNames);
-
-  const filteredUsers = userData.user.filter((user) => {
-    const fullName = `${user.first_name} ${user.last_name}`;
-    return fullName.toLowerCase().includes(username.toLowerCase());
-  });
-
   const handleChange = (e) => {
-    setSelectedOption(e.target.value);
-
-    if (e.target.value === "All") {
-      setUsername(e.target.value);
-      setFilteredProfile([]);
+    const selectedUsername = e.target.value;
+    setUsername(selectedUsername);
+    if (selectedUsername === "All") {
+      setFilteredUsers(users);
     } else {
-      setUsername(e.target.value);
-      setFilteredProfile(filteredUsers);
+      const filtered = users.filter((user) => {
+        const fullName = user.first_name + " " + user.last_name;
+        return fullName.toLowerCase().includes(selectedUsername.toLowerCase());
+      });
+      setFilteredUsers(filtered);
     }
+    setCurrentPage(1);
   };
 
-  const displayUsers = selectedOption === "All" ? userData.user : filteredUsers;
-  // console.log("user", displayUsers);
-
-  const totalUsers = displayUsers.length;
+  const totalUsers = filteredUsers.length;
   const totalPages = Math.ceil(totalUsers / usersPerPage);
+
+  const visibleUsers = filteredUsers.slice(
+    (currentPage - 1) * usersPerPage,
+    currentPage * usersPerPage
+  );
 
   return (
     <Container>
@@ -109,7 +67,7 @@ function ProfileList() {
           onChange={handleChange}
         >
           <MenuItem value="All">All</MenuItem>
-          {uniqueUserNamesArray.map((userName) => {
+          {uniqueUserNames.map((userName) => {
             return (
               <MenuItem
                 key={userName}
@@ -126,8 +84,8 @@ function ProfileList() {
         container
         spacing={2}
       >
-        {displayUsers
-          .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
+        {visibleUsers
+          // .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
           .map((item) => {
             return (
               <StyledGrid
@@ -159,7 +117,7 @@ function ProfileList() {
           })}
       </Grid>
 
-      {totalPages > 1 && displayUsers.length >= usersPerPage && (
+      {totalPages > 1 && totalUsers >= usersPerPage && (
         <StyledPagination
           count={totalPages}
           page={currentPage}

@@ -6,9 +6,9 @@ import {
   Select,
   Typography,
 } from "@mui/material";
-import styled from "styled-components";
+import { styled } from "@mui/system";
 
-export const Container = styled.div`
+export const Container = styled("div")`
   display: flex;
   flex-direction: column;
   align-items: center;
