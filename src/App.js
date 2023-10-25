@@ -1,7 +1,3 @@
-//create a state that store all users
-//filter and setUser
-//render setUser
-
 import { Grid, InputLabel, MenuItem, Typography } from "@mui/material";
 import { useState } from "react";
 import {

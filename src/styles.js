@@ -36,7 +36,7 @@ export const StyledPaper = styled(Paper)`
   height: 128px;
   position: relative;
 
-  &:nth-child(3n + 2) {
+  &:nth-of-type(3n + 2) {
     border-color: orange;
   }
 
